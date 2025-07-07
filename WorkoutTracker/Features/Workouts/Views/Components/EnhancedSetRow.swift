@@ -124,7 +124,7 @@ struct EnhancedSetRow: View {
             }
         }
         .onAppear {
-            weight = set.weight > 0 ? set.formattedWeight : ""
+            weight = set.weight > 0 ? String(set.weight).replacingOccurrences(of: ".0", with: "") : ""
             reps = set.reps > 0 ? "\(set.reps)" : ""
         }
         .sheet(isPresented: $showingRestTimePicker) {

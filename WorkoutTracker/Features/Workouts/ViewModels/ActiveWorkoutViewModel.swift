@@ -22,6 +22,7 @@ class ActiveWorkoutViewModel: ObservableObject {
     private var timer: Timer?
     private var restTimer: Timer?
     private var startTime: Date?
+    private var pausedTime: TimeInterval = 0
     
     init(workout: Workout, workoutService: WorkoutService) {
         self.workout = workout
@@ -44,9 +45,13 @@ class ActiveWorkoutViewModel: ObservableObject {
         isTimerRunning = false
         timer?.invalidate()
         timer = nil
+        if let startTime = startTime {
+            pausedTime = elapsedTime
+        }
     }
     
     func resumeWorkout() {
+        startTime = Date().addingTimeInterval(-pausedTime)
         isTimerRunning = true
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             self.updateElapsedTime()

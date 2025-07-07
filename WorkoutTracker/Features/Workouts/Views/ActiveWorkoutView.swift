@@ -61,11 +61,6 @@ struct ActiveWorkoutView: View {
         } message: {
             Text("Are you sure you want to end this workout?")
         }
-        .onAppear {
-            if !viewModel.isTimerRunning {
-                viewModel.startWorkout()
-            }
-        }
     }
     
     private var workoutHeader: some View {
@@ -156,7 +151,7 @@ struct ExerciseSection: View {
             if isExpanded {
                 VStack(spacing: Theme.Spacing.small) {
                     ForEach(workoutExercise.setsArray) { set in
-                        SetRowView(set: set, viewModel: viewModel)
+                        EnhancedSetRow(set: set, viewModel: viewModel)
                     }
                     
                     Button(action: { viewModel.addSet(to: workoutExercise) }) {
