@@ -2,9 +2,8 @@
 //  ExerciseDetailStatsView.swift
 //  WorkoutTracker
 //
-//  Created by Felipe Guasch on 6/7/25.
+//  Vista para mostrar estadísticas detalladas de un ejercicio
 //
-
 
 import SwiftUI
 import Charts
@@ -94,7 +93,7 @@ struct ExerciseDetailStatsView: View {
             HStack(spacing: Theme.Spacing.medium) {
                 PRCard(
                     title: "Max Weight",
-                    value: UserPreferences.shared.formatWeight(viewModel.personalRecords.maxWeight),
+                    value: UserPreferences.shared.formatWeight(UserPreferences.shared.convertFromStorageUnit(viewModel.personalRecords.maxWeight)),
                     date: viewModel.personalRecords.maxWeightDate,
                     icon: "scalemass",
                     color: Theme.Colors.primary
@@ -102,7 +101,7 @@ struct ExerciseDetailStatsView: View {
                 
                 PRCard(
                     title: "Max Volume",
-                    value: UserPreferences.shared.formatWeight(viewModel.personalRecords.maxVolume),
+                    value: UserPreferences.shared.formatWeight(UserPreferences.shared.convertFromStorageUnit(viewModel.personalRecords.maxVolume)),
                     date: viewModel.personalRecords.maxVolumeDate,
                     icon: "chart.bar.fill",
                     color: Theme.Colors.shoulders
@@ -186,7 +185,7 @@ struct ExerciseDetailStatsView: View {
             
             StatCard(
                 title: "Avg Weight",
-                value: UserPreferences.shared.formatWeight(viewModel.averageWeight),
+                value: UserPreferences.shared.formatWeight(UserPreferences.shared.convertFromStorageUnit(viewModel.averageWeight)),
                 icon: "scalemass"
             )
             
@@ -219,6 +218,8 @@ struct ExerciseDetailStatsView: View {
         }
     }
 }
+
+// MARK: - Componentes de la vista
 
 struct PRCard: View {
     let title: String
@@ -286,7 +287,7 @@ struct PerformanceRow: View {
             Spacer()
             
             VStack(alignment: .trailing, spacing: 4) {
-                Text(UserPreferences.shared.formatWeight(performance.maxWeight))
+                Text(UserPreferences.shared.formatWeight(UserPreferences.shared.convertFromStorageUnit(performance.maxWeight)))
                     .font(.headline)
                     .foregroundColor(Theme.Colors.primary)
                 
@@ -299,6 +300,8 @@ struct PerformanceRow: View {
     }
 }
 
+// MARK: - Tipos de datos
+
 enum MetricType: String, CaseIterable {
     case weight = "Weight"
     case volume = "Volume"
@@ -307,7 +310,7 @@ enum MetricType: String, CaseIterable {
     var title: String { rawValue }
 }
 
-struct TimeRange {
+struct TimeRange: Hashable {
     static let week = TimeRange(title: "Week", days: 7)
     static let month = TimeRange(title: "Month", days: 30)
     static let threeMonths = TimeRange(title: "3 Months", days: 90)
@@ -316,7 +319,7 @@ struct TimeRange {
     let days: Int
 }
 
-// MARK: - Exercise Stats View Model
+// MARK: - View Model
 
 @MainActor
 class ExerciseStatsViewModel: ObservableObject {
@@ -354,6 +357,8 @@ class ExerciseStatsViewModel: ObservableObject {
     }
 }
 
+// MARK: - Modelos de datos
+
 struct PersonalRecords {
     var maxWeight: Double = 0
     var maxWeightDate: Date?
@@ -363,7 +368,7 @@ struct PersonalRecords {
     var maxRepsDate: Date?
 }
 
-struct ExercisePerformance: Identifiable {
+struct ExercisePerformance: Identifiable, Equatable {
     let id = UUID()
     let date: Date
     let totalSets: Int

@@ -2,9 +2,8 @@
 //  ActiveWorkoutViewModel.swift
 //  WorkoutTracker
 //
-//  Created by Felipe Guasch on 6/7/25.
+//  ViewModel para manejar un entrenamiento activo
 //
-
 
 import Foundation
 import CoreData
@@ -29,6 +28,8 @@ class ActiveWorkoutViewModel: ObservableObject {
         self.workoutService = workoutService
         self.workoutExercises = workout.workoutExercisesArray
     }
+    
+    // MARK: - Workout Timer Functions
     
     func startWorkout() {
         startTime = Date()
@@ -63,6 +64,8 @@ class ActiveWorkoutViewModel: ObservableObject {
         }
     }
     
+    // MARK: - Rest Timer Functions
+    
     func startRestTimer(seconds: Int) {
         restTimerSeconds = seconds
         isRestTimerRunning = true
@@ -78,6 +81,8 @@ class ActiveWorkoutViewModel: ObservableObject {
         restTimer = nil
         restTimerSeconds = 0
     }
+    
+    // MARK: - Set Management
     
     func addSet(to workoutExercise: WorkoutExercise) {
         guard let context = workoutExercise.managedObjectContext else { return }
@@ -99,7 +104,9 @@ class ActiveWorkoutViewModel: ObservableObject {
     }
     
     func updateSet(_ set: WorkoutSet, weight: Double, reps: Int16, completed: Bool) {
-        set.weight = weight
+        // Convert weight from user's unit to storage unit (kg) before saving
+        let weightInKg = UserPreferences.shared.weightUnit.convert(weight, to: .kilograms)
+        set.weight = weightInKg
         set.reps = reps
         set.completed = completed
         
@@ -113,6 +120,8 @@ class ActiveWorkoutViewModel: ObservableObject {
             print("Error updating set: \(error)")
         }
     }
+    
+    // MARK: - Private Functions
     
     private func updateElapsedTime() {
         guard let startTime = startTime else { return }

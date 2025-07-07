@@ -137,8 +137,7 @@ struct RecentWorkoutsList: View {
     @FetchRequest(
         entity: Workout.entity(),
         sortDescriptors: [NSSortDescriptor(keyPath: \Workout.date, ascending: false)],
-        predicate: NSPredicate(format: "duration > 0"),
-        fetchLimit: 10
+        predicate: NSPredicate(format: "duration > 0")
     ) private var recentWorkouts: FetchedResults<Workout>
     
     var body: some View {

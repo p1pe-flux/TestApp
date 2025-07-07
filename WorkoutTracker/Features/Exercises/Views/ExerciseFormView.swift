@@ -113,6 +113,10 @@ struct ExerciseFormView: View {
                         notes: notes.isEmpty ? nil : notes
                     )
                 }
+                
+                // Trigger notification to refresh lists
+                NotificationCenter.default.post(name: .NSManagedObjectContextDidSave, object: context)
+                
                 dismiss()
             } catch {
                 print("Error saving exercise: \(error)")

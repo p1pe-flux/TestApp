@@ -142,12 +142,12 @@ struct WorkoutDetailCard: View {
     }
     
     private func formatVolume(_ volume: Double) -> String {
-        let converted = UserPreferences.shared.convertWeight(volume, from: .kilograms)
-        if converted >= 1000 {
-            return String(format: "%.1fk", converted / 1000)
+            let converted = UserPreferences.shared.weightUnit.convert(volume, to: UserPreferences.shared.weightUnit)
+            if converted >= 1000 {
+                return String(format: "%.1fk", converted / 1000)
+            }
+            return String(format: "%.0f", converted)
         }
-        return String(format: "%.0f", converted)
-    }
 }
 
 struct StatBadge: View {

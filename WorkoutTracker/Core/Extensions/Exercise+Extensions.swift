@@ -1,3 +1,10 @@
+//
+//  Exercise+Extensions.swift
+//  WorkoutTracker
+//
+//  Extensiones para la entidad Exercise de Core Data
+//
+
 import Foundation
 
 extension Exercise {

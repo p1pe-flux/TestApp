@@ -23,6 +23,13 @@ class WorkoutListViewModel: ObservableObject {
     init(workoutService: WorkoutServiceProtocol) {
         self.workoutService = workoutService
         loadWorkouts()
+        
+        NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)
+                    .receive(on: DispatchQueue.main)
+                    .sink { [weak self] _ in
+                        self?.loadWorkouts()
+                    }
+                    .store(in: &cancellables)
     }
     
     func loadWorkouts() {

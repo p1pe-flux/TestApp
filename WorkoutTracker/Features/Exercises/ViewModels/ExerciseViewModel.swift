@@ -22,10 +22,19 @@ class ExerciseViewModel: ObservableObject {
     private let exerciseService: ExerciseServiceProtocol
     private var cancellables = Set<AnyCancellable>()
     
+
     init(exerciseService: ExerciseServiceProtocol) {
         self.exerciseService = exerciseService
         setupBindings()
         loadExercises()
+        
+        // Observar cambios en Core Data
+        NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.loadExercises()
+            }
+            .store(in: &cancellables)
     }
     
     private func setupBindings() {

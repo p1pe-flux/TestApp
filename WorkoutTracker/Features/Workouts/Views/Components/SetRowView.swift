@@ -2,9 +2,8 @@
 //  SetRowView.swift
 //  WorkoutTracker
 //
-//  Created by Felipe Guasch on 6/7/25.
+//  Vista para editar un set individual de ejercicio
 //
-
 
 import SwiftUI
 
@@ -21,10 +20,12 @@ struct SetRowView: View {
     
     var body: some View {
         HStack(spacing: Theme.Spacing.small) {
+            // Número de set
             Text("\(set.setNumber)")
                 .frame(width: 30)
                 .foregroundColor(set.completed ? .secondary : .primary)
             
+            // Campo de peso
             TextField("0", text: $weight)
                 .keyboardType(.decimalPad)
                 .multilineTextAlignment(.center)
@@ -41,6 +42,7 @@ struct SetRowView: View {
             Text("×")
                 .foregroundColor(.secondary)
             
+            // Campo de repeticiones
             TextField("0", text: $reps)
                 .keyboardType(.numberPad)
                 .multilineTextAlignment(.center)
@@ -54,6 +56,7 @@ struct SetRowView: View {
                         .stroke(focusedField == .reps ? Theme.Colors.primary : Color.clear, lineWidth: 1)
                 )
             
+            // Botón de completado
             Button(action: toggleCompletion) {
                 Image(systemName: set.completed ? "checkmark.circle.fill" : "circle")
                     .foregroundColor(set.completed ? Theme.Colors.success : .secondary)
@@ -61,7 +64,9 @@ struct SetRowView: View {
             }
         }
         .onAppear {
-            weight = set.weight > 0 ? set.formattedWeight : ""
+            // Convert from storage unit to user's preferred unit for display
+            let convertedWeight = UserPreferences.shared.convertFromStorageUnit(set.weight)
+            weight = convertedWeight > 0 ? String(format: "%.1f", convertedWeight) : ""
             reps = set.reps > 0 ? "\(set.reps)" : ""
         }
         .onChange(of: weight) { _, newValue in
@@ -73,6 +78,8 @@ struct SetRowView: View {
     }
     
     private func updateSet() {
+        // Weight input is in user's preferred unit, no need to convert here
+        // The viewModel will handle conversion to storage unit
         let weightValue = Double(weight) ?? 0
         let repsValue = Int16(reps) ?? 0
         viewModel.updateSet(set, weight: weightValue, reps: repsValue, completed: set.completed)

@@ -2,9 +2,8 @@
 //  UserPreferences.swift
 //  WorkoutTracker
 //
-//  Created by Felipe Guasch on 6/7/25.
+//  Maneja las preferencias del usuario incluyendo unidades de peso
 //
-
 
 import SwiftUI
 
@@ -56,5 +55,14 @@ class UserPreferences: ObservableObject {
         } else {
             return String(format: "%.1f %@", weight, weightUnit.rawValue)
         }
+    }
+    
+    func convertWeight(_ weight: Double, from unit: WeightUnit) -> Double {
+        return unit.convert(weight, to: weightUnit)
+    }
+    
+    // Convenience method for converting from storage unit (kg) to user preference
+    func convertFromStorageUnit(_ weight: Double) -> Double {
+        return WeightUnit.kilograms.convert(weight, to: weightUnit)
     }
 }

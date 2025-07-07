@@ -1,16 +1,24 @@
+//
+//  Workout+Extensions.swift
+//  WorkoutTracker
+//
+//  Extensiones para la entidad Workout de Core Data
+//
+
 import Foundation
+import CoreData
 
 extension Workout {
     var wrappedName: String {
-        name ?? "Unnamed Workout"
+        return self.value(forKey: "name") as? String ?? "Unnamed Workout"
     }
     
     var wrappedNotes: String {
-        notes ?? ""
+        return self.value(forKey: "notes") as? String ?? ""
     }
     
     var workoutExercisesArray: [WorkoutExercise] {
-        let set = workoutExercises as? Set<WorkoutExercise> ?? []
+        let set = self.value(forKey: "workoutExercises") as? Set<WorkoutExercise> ?? []
         return set.sorted { $0.order < $1.order }
     }
     
@@ -18,11 +26,12 @@ extension Workout {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
-        return formatter.string(from: date ?? Date())
+        let workoutDate = self.value(forKey: "date") as? Date ?? Date()
+        return formatter.string(from: workoutDate)
     }
     
     var formattedDuration: String {
-        let totalSeconds = Int(duration)
+        let totalSeconds = Int(self.value(forKey: "duration") as? Int32 ?? 0)
         let hours = totalSeconds / 3600
         let minutes = (totalSeconds % 3600) / 60
         let seconds = totalSeconds % 60
@@ -52,6 +61,8 @@ extension Workout {
     }
     
     var totalVolume: Double {
-        workoutExercisesArray.reduce(0) { $0 + $1.totalVolume }
+        workoutExercisesArray.reduce(into: 0.0) { result, workoutExercise in
+            result += workoutExercise.totalVolume
+        }
     }
 }

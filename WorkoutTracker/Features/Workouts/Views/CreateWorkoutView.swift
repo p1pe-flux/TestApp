@@ -73,30 +73,44 @@ struct CreateWorkoutView: View {
     }
     
     private func createWorkout() {
-        Task {
-            do {
-                let workout = try workoutService.createWorkout(
-                    name: workoutName,
-                    date: workoutDate,
-                    notes: workoutNotes.isEmpty ? nil : workoutNotes
-                )
-                
-                // Add exercises to workout
-                for (index, exercise) in selectedExercises.enumerated() {
-                    let workoutExercise = WorkoutExercise(context: context)
-                    workoutExercise.id = UUID()
-                    workoutExercise.workout = workout
-                    workoutExercise.exercise = exercise
-                    workoutExercise.order = Int16(index)
+            Task {
+                do {
+                    let workout = try workoutService.createWorkout(
+                        name: workoutName,
+                        date: workoutDate,
+                        notes: workoutNotes.isEmpty ? nil : workoutNotes
+                    )
+                    
+                    // Add exercises to workout
+                    for (index, exercise) in selectedExercises.enumerated() {
+                        let workoutExercise = WorkoutExercise(context: context)
+                        workoutExercise.id = UUID()
+                        workoutExercise.workout = workout
+                        workoutExercise.exercise = exercise
+                        workoutExercise.order = Int16(index)
+                        
+                        // Add some default sets for each exercise
+                        for setNumber in 1...3 {
+                            let set = WorkoutSet(context: context)
+                            set.id = UUID()
+                            set.workoutExercise = workoutExercise
+                            set.setNumber = Int16(setNumber)
+                            set.restTime = Int16(UserPreferences.shared.defaultRestTime)
+                            set.createdAt = Date()
+                        }
+                    }
+                    
+                    try context.save()
+                    
+                    // Trigger notification to refresh lists
+                    NotificationCenter.default.post(name: .NSManagedObjectContextDidSave, object: context)
+                    
+                    dismiss()
+                } catch {
+                    print("Error creating workout: \(error)")
                 }
-                
-                try context.save()
-                dismiss()
-            } catch {
-                print("Error creating workout: \(error)")
             }
         }
-    }
 }
 
 struct ExercisePicker: View {
