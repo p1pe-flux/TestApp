@@ -12,10 +12,13 @@ struct WorkoutListView: View {
     @Environment(\.managedObjectContext) private var context
     @StateObject private var viewModel: WorkoutListViewModel
     @State private var showingCreateWorkout = false
+    @State private var showingCalendar = false
     @State private var selectedWorkout: Workout?
     @State private var workoutToDuplicate: Workout?
     @State private var showingDuplicateSheet = false
     @State private var expandedWeeks: Set<String> = []
+    @State private var selectedCalendarDate: Date?
+    @State private var showingCreateFromCalendar = false
     
     init() {
         let service = WorkoutService(context: PersistenceController.shared.container.viewContext)
@@ -35,6 +38,12 @@ struct WorkoutListView: View {
             }
             .navigationTitle("Workouts")
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: { showingCalendar = true }) {
+                        Image(systemName: "calendar")
+                    }
+                }
+                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingCreateWorkout = true }) {
                         Image(systemName: "plus")
@@ -43,6 +52,20 @@ struct WorkoutListView: View {
             }
             .sheet(isPresented: $showingCreateWorkout) {
                 CreateWorkoutView()
+            }
+            .sheet(isPresented: $showingCalendar) {
+                CalendarSheetView { selectedDate in
+                    selectedCalendarDate = selectedDate
+                    showingCalendar = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        showingCreateFromCalendar = true
+                    }
+                }
+            }
+            .sheet(isPresented: $showingCreateFromCalendar) {
+                if let selectedDate = selectedCalendarDate {
+                    CreateWorkoutFromCalendarView(selectedDate: selectedDate)
+                }
             }
             .sheet(item: $selectedWorkout) { workout in
                 ActiveWorkoutView(workout: workout)
@@ -63,7 +86,7 @@ struct WorkoutListView: View {
         EmptyStateView(
             icon: "figure.strengthtraining.traditional",
             title: "No workouts yet",
-            message: "Tap the + button to create your first workout",
+            message: "Tap the + button to create your first workout or use the calendar to schedule one",
             actionTitle: "Create Workout",
             action: { showingCreateWorkout = true }
         )
@@ -334,7 +357,7 @@ struct WorkoutListView: View {
             do {
                 _ = try duplicationService.createTemplate(
                     from: workout,
-                    templateName: "\(workout.wrappedName) Template"
+                    templateName: workout.wrappedName
                 )
                 HapticManager.shared.notification(.success)
             } catch {

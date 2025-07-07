@@ -2,9 +2,8 @@
 //  CalendarDayView.swift
 //  WorkoutTracker
 //
-//  Created by Felipe Guasch on 6/7/25.
+//  Vista básica para días del calendario (usada en vistas que no requieren selección)
 //
-
 
 import SwiftUI
 
