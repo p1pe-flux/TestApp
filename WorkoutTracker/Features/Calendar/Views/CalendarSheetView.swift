@@ -12,7 +12,6 @@ struct CalendarSheetView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: CalendarViewModel
     @State private var selectedDate: Date?
-    @State private var isCreating = false
     let onDateSelected: (Date) -> Void
     
     init(onDateSelected: @escaping (Date) -> Void) {
@@ -26,7 +25,8 @@ struct CalendarSheetView: View {
                 calendarSection
                 
                 if let selectedDate = selectedDate {
-                    selectedDateSection(selectedDate)
+                    workoutsForSelectedDate(selectedDate)
+                        .padding(.top)
                 }
                 
                 Spacer()
@@ -39,20 +39,15 @@ struct CalendarSheetView: View {
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        if let date = selectedDate, !isCreating {
-                            isCreating = true
-                            onDateSelected(date)
-                        }
-                    }) {
-                        if isCreating {
-                            ProgressView()
-                                .scaleEffect(0.8)
-                        } else {
-                            Text("Create")
+                    Button("Create") {
+                        if let date = selectedDate {
+                            dismiss()
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                onDateSelected(date)
+                            }
                         }
                     }
-                    .disabled(selectedDate == nil || isCreating)
+                    .disabled(selectedDate == nil)
                     .fontWeight(.medium)
                 }
             }
@@ -122,37 +117,6 @@ struct CalendarSheetView: View {
             }
         }
         .padding(.horizontal)
-    }
-    
-    private func selectedDateSection(_ date: Date) -> some View {
-        VStack(spacing: Theme.Spacing.medium) {
-            Divider()
-            
-            // Información de la fecha seleccionada
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Selected Date")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Text(date.formatted(date: .complete, time: .omitted))
-                        .font(.headline)
-                }
-                
-                Spacer()
-                
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(Theme.Colors.success)
-                    .font(.title2)
-            }
-            .padding()
-            .background(Theme.Colors.success.opacity(0.1))
-            .cornerRadius(Theme.CornerRadius.medium)
-            .padding(.horizontal)
-            
-            // Workouts para esta fecha
-            workoutsForSelectedDate(date)
-        }
     }
     
     private func workoutsForSelectedDate(_ date: Date) -> some View {

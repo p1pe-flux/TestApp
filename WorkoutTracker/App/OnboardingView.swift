@@ -41,54 +41,70 @@ struct OnboardingView: View {
     ]
     
     var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Spacer()
-                Button("Skip") {
-                    completeOnboarding()
-                }
-                .foregroundColor(.secondary)
-                .padding()
-            }
+        ZStack {
+            Color.black.opacity(0.01) // Invisible background to capture taps
+                .edgesIgnoringSafeArea(.all)
             
-            TabView(selection: $currentPage) {
-                ForEach(0..<pages.count, id: \.self) { index in
-                    OnboardingPage(
-                        title: pages[index].title,
-                        subtitle: pages[index].subtitle,
-                        icon: pages[index].icon,
-                        color: pages[index].color
-                    )
-                    .tag(index)
-                }
-            }
-            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-            
-            HStack(spacing: 8) {
-                ForEach(0..<pages.count, id: \.self) { index in
-                    Circle()
-                        .fill(index == currentPage ? Theme.Colors.primary : Color.secondary.opacity(0.3))
-                        .frame(width: 8, height: 8)
-                        .animation(.easeInOut, value: currentPage)
-                }
-            }
-            .padding()
-            
-            Button(action: {
-                if currentPage < pages.count - 1 {
-                    withAnimation {
-                        currentPage += 1
+            VStack(spacing: 0) {
+                HStack {
+                    Spacer()
+                    Button("Skip") {
+                        completeOnboarding()
                     }
-                } else {
-                    completeOnboarding()
+                    .foregroundColor(.secondary)
+                    .padding()
                 }
-            }) {
-                Text(currentPage < pages.count - 1 ? "Next" : "Get Started")
-                    .fontWeight(.medium)
+                
+                TabView(selection: $currentPage) {
+                    ForEach(Array(pages.enumerated()), id: \.offset) { index, page in
+                        OnboardingPage(
+                            title: page.title,
+                            subtitle: page.subtitle,
+                            icon: page.icon,
+                            color: page.color
+                        )
+                        .tag(index)
+                    }
+                }
+                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+                
+                HStack(spacing: 8) {
+                    ForEach(0..<pages.count, id: \.self) { index in
+                        Circle()
+                            .fill(index == currentPage ? Theme.Colors.primary : Color.secondary.opacity(0.3))
+                            .frame(width: 8, height: 8)
+                    }
+                }
+                .padding()
+                
+                Button(action: {
+                    if currentPage < pages.count - 1 {
+                        currentPage = currentPage + 1
+                    } else {
+                        completeOnboarding()
+                    }
+                }) {
+                    Text(currentPage < pages.count - 1 ? "Next" : "Get Started")
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Theme.Colors.primary)
+                        .cornerRadius(Theme.CornerRadius.medium)
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 50)
             }
-            .primaryButton()
-            .padding(.horizontal)
-            .padding(.bottom, 50)
+        }
+    }
+    
+    private func nextButtonAction() {
+        if currentPage < pages.count - 1 {
+            withAnimation {
+                currentPage += 1
+            }
+        } else {
+            completeOnboarding()
         }
     }
     

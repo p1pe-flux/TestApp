@@ -12,6 +12,7 @@ struct ActiveWorkoutView: View {
     @StateObject private var viewModel: ActiveWorkoutViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var showingEndWorkoutAlert = false
+    @State private var showingTimeEditor = false
     
     init(workout: Workout) {
         let service = WorkoutService(context: workout.managedObjectContext ?? PersistenceController.shared.container.viewContext)
@@ -61,11 +62,28 @@ struct ActiveWorkoutView: View {
         } message: {
             Text("Are you sure you want to end this workout?")
         }
+        .sheet(isPresented: $showingTimeEditor) {
+            TimeEditorView(time: $viewModel.elapsedTime)
+                .onDisappear {
+                    // El viewModel se actualiza automáticamente por el binding
+                    viewModel.setManualTime(viewModel.elapsedTime)
+                }
+        }
+        .onAppear {
+            // Auto-iniciar si no está iniciado
+            if !viewModel.isTimerRunning && viewModel.elapsedTime == 0 {
+                viewModel.startWorkout()
+            }
+        }
     }
     
     private var workoutHeader: some View {
         VStack(spacing: Theme.Spacing.medium) {
-            TimerDisplay(time: viewModel.elapsedTime)
+            // Timer con capacidad de edición
+            Button(action: { showingTimeEditor = true }) {
+                TimerDisplay(time: viewModel.elapsedTime)
+            }
+            .buttonStyle(PlainButtonStyle())
             
             HStack(spacing: Theme.Spacing.medium) {
                 if viewModel.isTimerRunning {
@@ -74,8 +92,12 @@ struct ActiveWorkoutView: View {
                     }
                     .buttonStyle(.bordered)
                 } else {
-                    Button("Resume") {
-                        viewModel.resumeWorkout()
+                    Button(viewModel.elapsedTime == 0 ? "Start" : "Resume") {
+                        if viewModel.elapsedTime == 0 {
+                            viewModel.startWorkout()
+                        } else {
+                            viewModel.resumeWorkout()
+                        }
                     }
                     .buttonStyle(.borderedProminent)
                 }

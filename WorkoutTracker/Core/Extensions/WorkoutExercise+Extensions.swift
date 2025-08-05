@@ -33,11 +33,12 @@ extension WorkoutSet {
     var formattedWeight: String {
         // Convert from storage unit to user's preferred unit
         let convertedWeight = UserPreferences.shared.convertFromStorageUnit(weight)
-        if convertedWeight.truncatingRemainder(dividingBy: 1) == 0 {
-            return String(format: "%.0f", convertedWeight)
-        } else {
-            return String(format: "%.1f", convertedWeight)
-        }
+        return WeightInputFormatter.formatWeight(convertedWeight)
+    }
+    
+    var displayWeight: String {
+        let convertedWeight = UserPreferences.shared.convertFromStorageUnit(weight)
+        return UserPreferences.shared.formatWeight(convertedWeight)
     }
 }
 

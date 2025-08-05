@@ -23,21 +23,23 @@ struct ValidationHelper {
         return weight >= 0 && weight <= 1000
     }
     
+    static func validateWeightString(_ weightStr: String) -> Bool {
+        guard let weight = WeightInputFormatter.parseWeight(weightStr) else {
+            return weightStr.isEmpty // Permitir campo vacío
+        }
+        return validateWeight(weight)
+    }
+    
     static func validateReps(_ reps: Int) -> Bool {
         return reps >= 0 && reps <= 1000
     }
     
     static func sanitizeNumericInput(_ input: String, allowDecimal: Bool = false) -> String {
-        let allowedCharacters = allowDecimal ? "0123456789." : "0123456789"
-        let filtered = input.filter { allowedCharacters.contains($0) }
-        
         if allowDecimal {
-            let components = filtered.split(separator: ".")
-            if components.count > 2 {
-                return String(components[0]) + "." + components[1...].joined()
-            }
+            return WeightInputFormatter.sanitizeWeightInput(input)
+        } else {
+            // Solo números para reps
+            return input.filter { "0123456789".contains($0) }
         }
-        
-        return filtered
     }
 }

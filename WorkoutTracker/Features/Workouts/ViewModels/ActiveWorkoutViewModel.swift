@@ -28,12 +28,18 @@ class ActiveWorkoutViewModel: ObservableObject {
         self.workout = workout
         self.workoutService = workoutService
         self.workoutExercises = workout.workoutExercisesArray
+        
+        // Si el workout ya tenía tiempo registrado, iniciarlo con ese tiempo
+        if workout.duration > 0 {
+            elapsedTime = TimeInterval(workout.duration)
+            pausedTime = elapsedTime
+        }
     }
     
     // MARK: - Workout Timer Functions
     
     func startWorkout() {
-        startTime = Date()
+        startTime = Date().addingTimeInterval(-pausedTime)
         isTimerRunning = true
         
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
@@ -45,9 +51,7 @@ class ActiveWorkoutViewModel: ObservableObject {
         isTimerRunning = false
         timer?.invalidate()
         timer = nil
-        if let startTime = startTime {
-            pausedTime = elapsedTime
-        }
+        pausedTime = elapsedTime
     }
     
     func resumeWorkout() {
@@ -66,6 +70,28 @@ class ActiveWorkoutViewModel: ObservableObject {
             } catch {
                 print("Error ending workout: \(error)")
             }
+        }
+    }
+    
+    // MARK: - Manual Time Adjustment
+    
+    func setManualTime(_ time: TimeInterval) {
+        elapsedTime = time
+        pausedTime = time
+        
+        // Si el timer está corriendo, reiniciarlo con el nuevo tiempo
+        if isTimerRunning {
+            timer?.invalidate()
+            startTime = Date().addingTimeInterval(-time)
+            timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+                self.updateElapsedTime()
+            }
+        }
+        
+        // Guardar el tiempo actualizado
+        Task {
+            workout.duration = Int32(time)
+            try? workout.managedObjectContext?.save()
         }
     }
     

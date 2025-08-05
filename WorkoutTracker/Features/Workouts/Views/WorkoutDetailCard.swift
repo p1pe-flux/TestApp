@@ -142,12 +142,12 @@ struct WorkoutDetailCard: View {
     }
     
     private func formatVolume(_ volume: Double) -> String {
-            let converted = UserPreferences.shared.weightUnit.convert(volume, to: UserPreferences.shared.weightUnit)
-            if converted >= 1000 {
-                return String(format: "%.1fk", converted / 1000)
-            }
-            return String(format: "%.0f", converted)
+        let converted = UserPreferences.shared.convertFromStorageUnit(volume)
+        if converted >= 1000 {
+            return String(format: "%.1fk", converted / 1000)
         }
+        return String(format: "%.0f", converted)
+    }
 }
 
 struct StatBadge: View {
@@ -206,7 +206,7 @@ struct ExerciseSummaryRow: View {
                     Text("•")
                         .foregroundColor(.secondary)
                     
-                    Text("Best: \(UserPreferences.shared.formatWeight(bestSet.weight)) × \(bestSet.reps)")
+                    Text("Best: \(UserPreferences.shared.formatWeight(UserPreferences.shared.convertFromStorageUnit(bestSet.weight))) × \(bestSet.reps)")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -246,7 +246,7 @@ struct SetSummaryRow: View {
                 .frame(width: 50, alignment: .leading)
             
             HStack(spacing: 4) {
-                Text(UserPreferences.shared.formatWeight(set.weight))
+                Text(UserPreferences.shared.formatWeight(UserPreferences.shared.convertFromStorageUnit(set.weight)))
                     .font(.caption)
                     .fontWeight(.medium)
                 
@@ -269,6 +269,23 @@ struct SetSummaryRow: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
+        }
+    }
+}
+
+struct ProgressIndicator: View {
+    let progress: Double
+    
+    var body: some View {
+        ZStack {
+            Circle()
+                .stroke(Color.secondary.opacity(0.2), lineWidth: 3)
+            
+            Circle()
+                .trim(from: 0, to: progress)
+                .stroke(Theme.Colors.primary, lineWidth: 3)
+                .rotationEffect(.degrees(-90))
+                .animation(.easeInOut, value: progress)
         }
     }
 }

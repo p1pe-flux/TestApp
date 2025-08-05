@@ -92,7 +92,7 @@ struct CreateWorkoutFromCalendarView: View {
                 }
             }
             .sheet(isPresented: $showingExercisePicker) {
-                ExercisePicker(selectedExercises: $selectedExercises)
+                ExercisePickerView(selectedExercises: $selectedExercises)
             }
             .sheet(isPresented: $showingTemplatePicker) {
                 TemplateListView { template in

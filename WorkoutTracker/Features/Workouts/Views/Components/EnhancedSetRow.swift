@@ -51,7 +51,14 @@ struct EnhancedSetRow: View {
                             RoundedRectangle(cornerRadius: 8)
                                 .stroke(focusedField == .weight ? Color.accentColor : Color.clear, lineWidth: 1)
                         )
-                        .onChange(of: weight) { _ in updateSet() }
+                        .onChange(of: weight) { _, newValue in
+                            let sanitized = WeightInputFormatter.sanitizeWeightInput(newValue)
+                            if sanitized != newValue {
+                                weight = sanitized
+                            } else if WeightInputFormatter.isValidWeightInput(newValue) {
+                                updateSet()
+                            }
+                        }
                 }
                 
                 // Reps input
@@ -74,7 +81,7 @@ struct EnhancedSetRow: View {
                             RoundedRectangle(cornerRadius: 8)
                                 .stroke(focusedField == .reps ? Color.accentColor : Color.clear, lineWidth: 1)
                         )
-                        .onChange(of: reps) { _ in updateSet() }
+                        .onChange(of: reps) { _, _ in updateSet() }
                 }
                 
                 // Rest time
@@ -114,7 +121,7 @@ struct EnhancedSetRow: View {
                         .font(.caption2)
                         .foregroundColor(.secondary)
                     
-                    Text("Previous: \(UserPreferences.shared.formatWeight(previousSet.weight)) × \(previousSet.reps)")
+                    Text("Previous: \(UserPreferences.shared.formatWeight(UserPreferences.shared.convertFromStorageUnit(previousSet.weight))) × \(previousSet.reps)")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                     
@@ -124,7 +131,9 @@ struct EnhancedSetRow: View {
             }
         }
         .onAppear {
-            weight = set.weight > 0 ? String(set.weight).replacingOccurrences(of: ".0", with: "") : ""
+            // Convertir de kg almacenados a la unidad del usuario
+            let weightInUserUnit = UserPreferences.shared.convertFromStorageUnit(set.weight)
+            weight = WeightInputFormatter.formatForInput(weightInUserUnit)
             reps = set.reps > 0 ? "\(set.reps)" : ""
         }
         .sheet(isPresented: $showingRestTimePicker) {
@@ -132,20 +141,22 @@ struct EnhancedSetRow: View {
                 get: { Int(set.restTime) },
                 set: { newValue in
                     set.restTime = Int16(newValue)
-                    viewModel.updateSet(set, weight: set.weight, reps: set.reps, completed: set.completed)
+                    viewModel.updateSet(set, weight: WeightInputFormatter.parseWeight(weight) ?? 0, reps: Int16(reps) ?? 0, completed: set.completed)
                 }
             ))
         }
     }
     
     private func updateSet() {
-        let weightValue = Double(weight) ?? 0
+        let weightValue = WeightInputFormatter.parseWeight(weight) ?? 0
         let repsValue = Int16(reps) ?? 0
         viewModel.updateSet(set, weight: weightValue, reps: repsValue, completed: set.completed)
     }
     
     private func toggleCompletion() {
-        viewModel.updateSet(set, weight: set.weight, reps: set.reps, completed: !set.completed)
+        // Asegurar que tenemos el peso actualizado antes de cambiar el estado
+        let weightValue = WeightInputFormatter.parseWeight(weight) ?? 0
+        viewModel.updateSet(set, weight: weightValue, reps: set.reps, completed: !set.completed)
         HapticManager.shared.impact(.medium)
     }
     

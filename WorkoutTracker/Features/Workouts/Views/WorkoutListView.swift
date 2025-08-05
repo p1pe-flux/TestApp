@@ -18,7 +18,6 @@ struct WorkoutListView: View {
     @State private var showingDuplicateSheet = false
     @State private var expandedWeeks: Set<String> = []
     @State private var selectedCalendarDate: Date?
-    @State private var showingCreateFromCalendar = false
     
     init() {
         let service = WorkoutService(context: PersistenceController.shared.container.viewContext)
@@ -57,15 +56,10 @@ struct WorkoutListView: View {
                 CalendarSheetView { selectedDate in
                     selectedCalendarDate = selectedDate
                     showingCalendar = false
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        showingCreateFromCalendar = true
-                    }
                 }
             }
-            .sheet(isPresented: $showingCreateFromCalendar) {
-                if let selectedDate = selectedCalendarDate {
-                    CreateWorkoutFromCalendarView(selectedDate: selectedDate)
-                }
+            .sheet(item: $selectedCalendarDate) { date in
+                CreateWorkoutFromCalendarView(selectedDate: date)
             }
             .sheet(item: $selectedWorkout) { workout in
                 ActiveWorkoutView(workout: workout)
@@ -365,4 +359,9 @@ struct WorkoutListView: View {
             }
         }
     }
+}
+
+// Extension para hacer Date Identifiable
+extension Date: Identifiable {
+    public var id: Double { timeIntervalSince1970 }
 }

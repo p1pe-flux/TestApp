@@ -10,9 +10,10 @@ import SwiftUI
 class UserPreferences: ObservableObject {
     static let shared = UserPreferences()
     
+    @AppStorage("userName") var userName: String = ""
     @AppStorage("weightUnit") var weightUnit: WeightUnit = .kilograms
     @AppStorage("defaultRestTime") var defaultRestTime: Int = 90
-    @AppStorage("autoStartRestTimer") var autoStartRestTimer: Bool = true
+    @AppStorage("autoStartRestTimer") var autoStartRestTimer: Bool = false
     @AppStorage("playTimerSound") var playTimerSound: Bool = true
     @AppStorage("enableHaptics") var enableHaptics: Bool = true
     @AppStorage("appTheme") var appTheme: AppTheme = .system

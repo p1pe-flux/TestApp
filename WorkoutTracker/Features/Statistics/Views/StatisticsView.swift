@@ -10,6 +10,7 @@ import SwiftUI
 
 struct StatisticsView: View {
     @StateObject private var viewModel: StatisticsViewModel
+    @State private var selectedExercise: Exercise?
     
     init() {
         let service = StatisticsService(context: PersistenceController.shared.container.viewContext)
@@ -27,11 +28,18 @@ struct StatisticsView: View {
                             .frame(height: 200)
                     } else if let stats = viewModel.workoutStats {
                         overviewSection(stats: stats)
+                        
+                        if !viewModel.frequentExercises.isEmpty {
+                            frequentExercisesSection
+                        }
                     }
                 }
                 .padding()
             }
             .navigationTitle("Statistics")
+            .sheet(item: $selectedExercise) { exercise in
+                ExerciseProgressView(exercise: exercise)
+            }
         }
     }
     
@@ -58,7 +66,7 @@ struct StatisticsView: View {
                 
                 StatCard(
                     title: "Total Volume",
-                    value: UserPreferences.shared.formatWeight(stats.totalVolume),
+                    value: UserPreferences.shared.formatWeight(UserPreferences.shared.convertFromStorageUnit(stats.totalVolume)),
                     icon: "scalemass"
                 )
             }
@@ -82,5 +90,23 @@ struct StatisticsView: View {
     private func formatDuration(_ duration: TimeInterval) -> String {
         let minutes = Int(duration) / 60
         return "\(minutes)m"
+    }
+    
+    private var frequentExercisesSection: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.medium) {
+            Text("Ejercicios Frecuentes")
+                .font(.headline)
+            
+            ForEach(viewModel.frequentExercises) { exerciseData in
+                FrequentExerciseRow(exerciseData: exerciseData) {
+                    showExerciseProgress(for: exerciseData.exercise)
+                }
+            }
+        }
+        .padding(.top, Theme.Spacing.large)
+    }
+    
+    private func showExerciseProgress(for exercise: Exercise) {
+        selectedExercise = exercise
     }
 }

@@ -14,6 +14,7 @@ import Combine
 class StatisticsViewModel: ObservableObject {
     @Published var workoutStats: WorkoutStatistics?
     @Published var recentExerciseStats: [ExerciseStatistics] = []
+    @Published var frequentExercises: [FrequentExerciseData] = []
     @Published var isLoading = false
     @Published var selectedTimeRange = TimeRange.month
     
@@ -62,11 +63,56 @@ class StatisticsViewModel: ObservableObject {
             do {
                 let (start, end) = selectedTimeRange.dateRange
                 workoutStats = try statisticsService.getWorkoutStats(from: start, to: end)
+                frequentExercises = try await loadFrequentExercises(from: start, to: end)
                 isLoading = false
             } catch {
                 print("Error loading statistics: \(error)")
                 isLoading = false
             }
         }
+    }
+    
+    private func loadFrequentExercises(from startDate: Date, to endDate: Date) async throws -> [FrequentExerciseData] {
+        let request: NSFetchRequest<WorkoutExercise> = WorkoutExercise.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "workout.date >= %@ AND workout.date <= %@",
+            startDate as CVarArg,
+            endDate as CVarArg
+        )
+        
+        let context = statisticsService.context
+        let workoutExercises = try context.fetch(request)
+        
+        // Agrupar por ejercicio
+        let exerciseGroups = Dictionary(grouping: workoutExercises) { $0.exercise }
+        
+        return exerciseGroups.compactMap { (exercise, workoutExercises) in
+            guard let exercise = exercise else { return nil }
+            
+            let sortedByDate = workoutExercises
+                .compactMap { $0.workout?.date }
+                .sorted(by: >)
+            
+            let lastPerformed = sortedByDate.first
+            
+            // Calcular tendencia comparando con período anterior
+            let trend = calculateTrend(for: exercise, currentCount: workoutExercises.count)
+            
+            return FrequentExerciseData(
+                exercise: exercise,
+                timesPerformed: workoutExercises.count,
+                lastPerformed: lastPerformed,
+                trend: trend
+            )
+        }
+        .sorted { $0.timesPerformed > $1.timesPerformed }
+        .prefix(5) // Mostrar solo los 5 más frecuentes
+        .map { $0 }
+    }
+    
+    private func calculateTrend(for exercise: Exercise, currentCount: Int) -> ExerciseTrend? {
+        // Aquí podrías implementar lógica para comparar con el período anterior
+        // Por ahora retornamos nil
+        return nil
     }
 }

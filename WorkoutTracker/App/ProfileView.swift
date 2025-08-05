@@ -11,6 +11,7 @@ import SwiftUI
 struct ProfileView: View {
     @EnvironmentObject private var userPreferences: UserPreferences
     @State private var showingSettings = false
+    @State private var showingTemplates = false
     
     var body: some View {
         NavigationView {
@@ -34,6 +35,17 @@ struct ProfileView: View {
                         Spacer()
                     }
                     .padding(.vertical)
+                }
+                
+                Section("Workout Management") {
+                    Button(action: { showingTemplates = true }) {
+                        HStack {
+                            Label("Workout Templates", systemImage: "doc.text")
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .foregroundColor(.secondary)
+                        }
+                    }
                 }
                 
                 Section("Preferences") {
@@ -85,6 +97,9 @@ struct ProfileView: View {
             .navigationTitle("Profile")
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
+            }
+            .sheet(isPresented: $showingTemplates) {
+                TemplateManagerView()
             }
         }
     }

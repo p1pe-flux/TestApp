@@ -55,20 +55,3 @@ struct WorkoutCard: View {
         .buttonStyle(PlainButtonStyle())
     }
 }
-
-struct ProgressIndicator: View {
-    let progress: Double
-    
-    var body: some View {
-        ZStack {
-            Circle()
-                .stroke(Color.secondary.opacity(0.2), lineWidth: 3)
-            
-            Circle()
-                .trim(from: 0, to: progress)
-                .stroke(Theme.Colors.primary, lineWidth: 3)
-                .rotationEffect(.degrees(-90))
-                .animation(.easeInOut, value: progress)
-        }
-    }
-}

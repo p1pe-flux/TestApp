@@ -12,6 +12,7 @@ struct ExerciseListView: View {
     @StateObject private var viewModel: ExerciseViewModel
     @State private var showingCreateExercise = false
     @State private var exerciseToEdit: Exercise?
+    @State private var exerciseToShowProgress: Exercise?
     
     init() {
         let service = ExerciseService(context: PersistenceController.shared.container.viewContext)
@@ -45,6 +46,9 @@ struct ExerciseListView: View {
             }
             .sheet(item: $exerciseToEdit) { exercise in
                 ExerciseFormView(exercise: exercise)
+            }
+            .sheet(item: $exerciseToShowProgress) { exercise in
+                ExerciseProgressView(exercise: exercise)
             }
         }
     }
@@ -98,6 +102,27 @@ struct ExerciseListView: View {
                 ExerciseRow(exercise: exercise)
                     .onTapGesture {
                         exerciseToEdit = exercise
+                    }
+                    .onLongPressGesture {
+                        exerciseToShowProgress = exercise
+                        HapticManager.shared.impact(.medium)
+                    }
+                    .contextMenu {
+                        Button(action: { exerciseToShowProgress = exercise }) {
+                            Label("Ver Progreso", systemImage: "chart.line.uptrend.xyaxis")
+                        }
+                        
+                        Button(action: { exerciseToEdit = exercise }) {
+                            Label("Editar", systemImage: "pencil")
+                        }
+                        
+                        Button(role: .destructive, action: {
+                            Task {
+                                await viewModel.deleteExercise(exercise)
+                            }
+                        }) {
+                            Label("Eliminar", systemImage: "trash")
+                        }
                     }
             }
             .onDelete { offsets in

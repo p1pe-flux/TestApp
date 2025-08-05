@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import Charts
 
 struct ExerciseDetailStatsView: View {
     let exercise: Exercise
@@ -149,21 +148,26 @@ struct ExerciseDetailStatsView: View {
                     .font(.caption)
                 }
                 
-                Chart(viewModel.progressData.filter { $0.type == selectedMetric }) { data in
-                    LineMark(
-                        x: .value("Date", data.date),
-                        y: .value(selectedMetric.title, data.value)
-                    )
-                    .foregroundStyle(Theme.Colors.primary)
-                    .interpolationMethod(.catmullRom)
-                    
-                    PointMark(
-                        x: .value("Date", data.date),
-                        y: .value(selectedMetric.title, data.value)
-                    )
-                    .foregroundStyle(Theme.Colors.primary)
+                // Simplified progress display without Charts
+                VStack(spacing: Theme.Spacing.small) {
+                    ForEach(viewModel.progressData.filter { $0.type == selectedMetric }) { data in
+                        HStack {
+                            Text(data.date.formatted(date: .abbreviated, time: .omitted))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            
+                            Spacer()
+                            
+                            Text(String(format: "%.1f", data.value))
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .foregroundColor(Theme.Colors.primary)
+                        }
+                    }
                 }
-                .frame(height: 250)
+                .padding()
+                .background(Color(UIColor.tertiarySystemBackground))
+                .cornerRadius(Theme.CornerRadius.small)
             }
             .cardStyle()
         }

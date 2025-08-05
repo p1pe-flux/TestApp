@@ -133,33 +133,7 @@ struct WorkoutDayInfoSection: View {
     }
     
     private var selectedDateCard: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Selected Date")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
-                Text(selectedDate.formatted(date: .complete, time: .omitted))
-                    .font(.headline)
-            }
-            
-            Spacer()
-            
-            VStack(alignment: .trailing, spacing: 4) {
-                Image(systemName: workouts.isEmpty ? "calendar.badge.plus" : "calendar.badge.checkmark")
-                    .foregroundColor(workouts.isEmpty ? Theme.Colors.primary : Theme.Colors.success)
-                    .font(.title2)
-                
-                Text("\(workouts.count)")
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(.secondary)
-            }
-        }
-        .padding()
-        .background(workouts.isEmpty ? Theme.Colors.primary.opacity(0.1) : Theme.Colors.success.opacity(0.1))
-        .cornerRadius(Theme.CornerRadius.medium)
-        .padding(.horizontal)
+        EmptyView()
     }
     
     private var workoutsListSection: some View {
